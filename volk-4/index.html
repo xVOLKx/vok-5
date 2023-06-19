@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Банковская карточка</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+  <style>
+    .card {
+      width: 400px;
+      height: 240px;
+      background-color: #4CAF50; /* Зеленый цвет фона */
+      border-radius: 10px;
+      padding: 20px;
+      box-sizing: border-box;
+      position: relative;
+      color: white; /* Цвет текста внутри карты */
+    }
+
+    .card .logo {
+      position: absolute;
+      top: 140px;
+      right: 20px;
+      width: 50px;
+    }
+
+    .card .card-number {
+      font-size: 20px;
+      margin-bottom: 80px;
+      text-align: center;
+    }
+
+    .card .expiration {
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+
+    .card .cardholder {
+      font-size: 18px;
+      font-weight: bold;
+      bottom: 100px;
+    }
+
+    .card-thumbnail {
+      width: 400px;
+      height: 240px;
+      background-color: lightgray;
+      margin-top: 10px;
+    }
+
+    .form-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .form-container .card-form {
+      flex: 1;
+      margin-right: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Банковская карточка</h1>
+    <div class="form-container">
+      <div class="card-form">
+        <form id="card-form">
+          <div class="form-group">
+            <label for="bank-name">Название банка:</label>
+            <input type="text" class="form-control" id="bank-name" value="Сбер" disabled>
+          </div>
+          <div class="form-group">
+            <label for="payment-system">Тип платежной системы:</label>
+            <select class="form-control" id="payment-system" required>
+              <option value="">Выберите тип платежной системы</option>
+              <option value="visa">Visa</option>
+              <option value="mir">Мир</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="card-number">Номер карты:</label>
+            <input type="text" class="form-control" id="card-number" maxlength="19" required>
+          </div>
+          <div class="form-group">
+            <label for="card-holder">Имя держателя карты:</label>
+            <input type="text" class="form-control" id="card-holder" required>
+          </div>
+          <div class="form-group">
+            <label for="expiration-date">Месяц и год окончания карты (MM/YYYY):</label>
+            <input type="text" class="form-control" id="expiration-date" placeholder="Например, 02/2027" required>
+          </div>
+          <button type="submit" class="btn btn-primary">Добавить карту</button>
+        </form>
+      </div>
+
+      <div class="card-thumbnail" id="card-thumbnail">
+        <div class="card">
+          <div class="logo" id="card-logo"> </div>
+          <div class="card-number">**** **** **** 1234</div>
+          <div class="expiration">06/25</div>
+          <div class="cardholder">Имя Держателя</div>
+        </div>
+      </div>
+    </div>
+
+    <table class="table mt-4">
+      <thead>
+        <tr>
+          <th>Название банка</th>
+          <th>Тип платежной системы</th>
+          <th>Номер карты</th>
+          <th>Имя держателя</th>
+          <th>Месяц и год окончания</th>
+        </tr>
+      </thead>
+      <tbody id="card-table">
+      </tbody>
+    </table>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+  <script>
+    // Обработчик отправки формы
+    document.getElementById('card-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      // Получение значений полей формы
+      var bankName = document.getElementById('bank-name').value;
+      var paymentSystem = document.getElementById('payment-system').value;
+      var cardNumber = document.getElementById('card-number').value.replace(/\s/g, '');
+      var cardHolder = document.getElementById('card-holder').value;
+      var expirationDate = document.getElementById('expiration-date').value;
+
+      // Очистка полей формы
+      document.getElementById('payment-system').value = '';
+      document.getElementById('card-number').value = '';
+      document.getElementById('card-holder').value = '';
+      document.getElementById('expiration-date').value = '';
+
+      // Отображение информации в миниатюре карты
+      document.getElementById('card-thumbnail').innerHTML = '<div class="card"><div class="logo" id="card-logo">' + paymentSystem + '</div><div class="card-number">' + cardNumber + '</div><div class="expiration">' + expirationDate + '</div><div class="cardholder">' + cardHolder + '</div></div>';
+
+      // Создание новой строки в таблице
+      var tableRow = document.createElement('tr');
+      tableRow.innerHTML = '<td>' + bankName + '</td><td>' + paymentSystem + '</td><td>' + cardNumber + '</td><td>' + cardHolder + '</td><td>' + expirationDate + '</td>';
+      document.getElementById('card-table').appendChild(tableRow);
+    });
+
+    // Добавление слеша после ввода месяца
+    document.getElementById('expiration-date').addEventListener('input', function(e) {
+      var value = e.target.value;
+      var formattedValue = formatExpirationDate(value);
+      e.target.value = formattedValue;
+    });
+
+    // Форматирование номера карты: **** **** **** 1234
+    document.getElementById('card-number').addEventListener('input', function(e) {
+      var value = e.target.value;
+      var formattedValue = formatCardNumber(value);
+      e.target.value = formattedValue;
+    });
+
+    // Функция форматирования номера карты
+    function formatCardNumber(cardNumber) {
+      return cardNumber;
+    }
+
+    // Функция форматирования даты окончания
+    function formatExpirationDate(expirationDate) {
+      var formattedDate = expirationDate.replace(/\D/g, ''); // Удаляем все нечисловые символы
+      if (formattedDate.length > 2) {
+        formattedDate = formattedDate.slice(0, 2) + '/' + formattedDate.slice(2); // Добавляем слеш после второй цифры
+      }
+      if (formattedDate.length > 7) {
+        formattedDate = formattedDate.slice(0, 7); // Ограничиваем длину ввода до 7 символов (MM/YYYY)
+      }
+      return formattedDate;
+    }
+
+    // Отображение логотипа платежной системы
+    document.getElementById('payment-system').addEventListener('change', function(e) {
+      var paymentSystem = e.target.value;
+      var cardLogo = document.getElementById('card-logo');
+      switch (paymentSystem) {
+        case 'visa':
+          cardLogo.textContent = 'Visa';
+          break;
+        case 'mir':
+          cardLogo.textContent = 'МИР';
+          break;
+        default:
+          cardLogo.textContent = '';
+          break;
+      }
+    });
+  </script>
+</body>
+</html>
